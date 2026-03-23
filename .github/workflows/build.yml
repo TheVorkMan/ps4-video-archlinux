@@ -31,7 +31,7 @@ jobs:
         run: |
           useradd -m builder
           mkdir -p /home/builder/build
-          cp -r /github/workspace/* /home/builder/build/
+          cp -r . /home/builder/build/
           chown -R builder:builder /home/builder/build
 
       - name: Build Mesa 64-bit
