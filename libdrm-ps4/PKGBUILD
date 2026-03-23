@@ -6,7 +6,7 @@
 #
 pkgname=libdrm-ps4
 _realname=libdrm
-pkgver=2.4.131.r1.g369990d9
+pkgver=2.4.131.r4.gb9dea73d
 pkgrel=1
 pkgdesc="Userspace interface to kernel DRM services, master git version"
 arch=(i686 x86_64)
