@@ -38,14 +38,6 @@ jobs:
           cp -r . /home/builder/build/
           chown -R builder:builder /home/builder/build
 
-      - name: Build Mesa 64-bit
-        run: |
-          su builder -c "cd /home/builder/build/${MESA64} && makepkg --skippgpcheck"
-
-      - name: Build Mesa 32-bit
-        run: |
-          su builder -c "cd /home/builder/build/${MESA32} && makepkg --skippgpcheck"
-
       - name: Build libdrm 64-bit
         run: |
           su builder -c "cd /home/builder/build/${LIBDRM64} && makepkg --skippgpcheck"
@@ -58,14 +50,23 @@ jobs:
         run: |
           su builder -c "cd /home/builder/build/${XF86} && makepkg --skippgpcheck"
 
+      - name: Build Mesa 64-bit
+        run: |
+          su builder -c "cd /home/builder/build/${MESA64} && makepkg --skippgpcheck"
+
+      - name: Build Mesa 32-bit
+        run: |
+          su builder -c "cd /home/builder/build/${MESA32} && makepkg --skippgpcheck"
+
+
       - name: Copy built packages and update repo
         run: |
           mkdir -p /home/builder/build/${REPO}
-          cp /home/builder/build/${MESA64}/*.zst /home/builder/build/${REPO}/
-          cp /home/builder/build/${MESA32}/*.zst /home/builder/build/${REPO}/
           cp /home/builder/build/${LIBDRM64}/*.zst /home/builder/build/${REPO}/
           cp /home/builder/build/${LIBDRM32}/*.zst /home/builder/build/${REPO}/
           cp /home/builder/build/${XF86}/*.zst /home/builder/build/${REPO}/
+          cp /home/builder/build/${MESA64}/*.zst /home/builder/build/${REPO}/
+          cp /home/builder/build/${MESA32}/*.zst /home/builder/build/${REPO}/
           su builder -c "cd /home/builder/build/${REPO} && repo-add ps4-video.db.tar.zst *.zst"
 
       - name: Commit artifacts back
