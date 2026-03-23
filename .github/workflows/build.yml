@@ -28,30 +28,36 @@ jobs:
           pacman -S --needed --noconfirm \
             meson ninja llvm zlib libdrm python
 
+      - name: Create build user
+        run: |
+          useradd -m builder
+          echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+          chown -R builder:builder /github/workspace
+
       - name: Build Mesa (64-bit)
         working-directory: ${{ env.MESA64 }}
         run: |
-          makepkg -s --skippgpcheck
-
+          su builder -c "makepkg -s --skippgpcheck"
+          
       - name: Build Mesa (32-bit)
         working-directory: ${{ env.MESA32 }}
         run: |
-          makepkg -s --skippgpcheck
+          su builder -c "makepkg -s --skippgpcheck"
 
       - name: Build libdrm (64-bit)
         working-directory: ${{ env.LIBDRM64 }}
         run: |
-          makepkg -s --skippgpcheck
+          su builder -c "makepkg -s --skippgpcheck"
 
       - name: Build libdrm (32-bit)
         working-directory: ${{ env.LIBDRM32 }}
         run: |
-          makepkg -s --skippgpcheck
+          su builder -c "makepkg -s --skippgpcheck"
 
       - name: Build XF86
         working-directory: ${{ env.XF86 }}
         run: |
-          makepkg -s --skippgpcheck
+          su builder -c "makepkg -s --skippgpcheck"
 
 
       - name: Copy built files and set up Pacman repo
