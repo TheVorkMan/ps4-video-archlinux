@@ -30,7 +30,7 @@ jobs:
               libxxf86vm libxdamage libxshmfence libunwind libglvnd \
               wayland lm_sensors vulkan-icd-loader libxfixes libx11 libxext \
               libxcb xcb-util-keysyms clang libclc spirv-llvm-translator spirv-tools \
-              python-docutils cairo cunit
+              python-docutils cairo cunit lib32-libpciaccess lib32-gcc-libs
 
       - name: Create non-root build user and workspace
         run: |
