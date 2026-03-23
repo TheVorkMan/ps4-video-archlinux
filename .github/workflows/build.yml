@@ -1,13 +1,14 @@
-name: Build Mesa
+name: Build Mesa and related packages
 
 on:
-  workflow_dispatch: # allows manual triggering
+  workflow_dispatch:  # manual trigger
 
 jobs:
   build:
     runs-on: ubuntu-latest
     container:
       image: archlinux:latest
+
     env:
       MESA64: mesa-ps4
       MESA32: lib32-mesa-ps4
@@ -20,60 +21,58 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup Arch chroot
+      - name: Install build dependencies
         run: |
           pacman-key --init
           pacman-key --populate archlinux
-          pacman -Sy --noconfirm base-devel git fakeroot
-          pacman -S --needed --noconfirm \
-            meson ninja llvm zlib libdrm python
+          pacman -Sy --noconfirm \
+              base-devel git fakeroot meson ninja llvm zlib libdrm python \
+              libxxf86vm libxdamage libxshmfence libunwind libglvnd \
+              wayland lm_sensors vulkan-icd-loader libxfixes libx11 libxext \
+              libxcb xcb-util-keysyms clang libclc spirv-llvm-translator spirv-tools
 
-      - name: Create build user
+      - name: Create non-root build user and workspace
         run: |
           useradd -m builder
-          echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-          chown -R builder:builder /github/workspace
+          mkdir -p /home/builder/build
+          cp -r . /home/builder/build/
+          chown -R builder:builder /home/builder/build
 
-      - name: Build Mesa (64-bit)
-        working-directory: ${{ env.MESA64 }}
+      - name: Build libdrm 64-bit
         run: |
-          su builder -c "makepkg -s --skippgpcheck"
-          
-      - name: Build Mesa (32-bit)
-        working-directory: ${{ env.MESA32 }}
-        run: |
-          su builder -c "makepkg -s --skippgpcheck"
+          su builder -c "cd /home/builder/build/${LIBDRM64} && makepkg --skippgpcheck"
 
-      - name: Build libdrm (64-bit)
-        working-directory: ${{ env.LIBDRM64 }}
+      - name: Build libdrm 32-bit
         run: |
-          su builder -c "makepkg -s --skippgpcheck"
+          su builder -c "cd /home/builder/build/${LIBDRM32} && makepkg --skippgpcheck"
 
-      - name: Build libdrm (32-bit)
-        working-directory: ${{ env.LIBDRM32 }}
+      - name: Build XF86 driver
         run: |
-          su builder -c "makepkg -s --skippgpcheck"
+          su builder -c "cd /home/builder/build/${XF86} && makepkg --skippgpcheck"
 
-      - name: Build XF86
-        working-directory: ${{ env.XF86 }}
+      - name: Build Mesa 64-bit
         run: |
-          su builder -c "makepkg -s --skippgpcheck"
+          su builder -c "cd /home/builder/build/${MESA64} && makepkg --skippgpcheck"
+
+      - name: Build Mesa 32-bit
+        run: |
+          su builder -c "cd /home/builder/build/${MESA32} && makepkg --skippgpcheck"
 
 
-      - name: Copy built files and set up Pacman repo
-        working-directory: ${{ env.REPO }}
+      - name: Copy built packages and update repo
         run: |
-          cp ${{ env.MESA64 }} *.zst . |
-          cp ${{ env.MESA32 }} *.zst . |
-          cp ${{ env.LIBDRM64 }} *.zst . |
-          cp ${{ env.LIBDRM32 }} *.zst . |
-          cp ${{ env.XF86 }} *.zst . |
-          repo-add ps4-video.db.tar.zst *.zst
-          
+          mkdir -p /home/builder/build/${REPO}
+          cp /home/builder/build/${LIBDRM64}/*.zst /home/builder/build/${REPO}/
+          cp /home/builder/build/${LIBDRM32}/*.zst /home/builder/build/${REPO}/
+          cp /home/builder/build/${XF86}/*.zst /home/builder/build/${REPO}/
+          cp /home/builder/build/${MESA64}/*.zst /home/builder/build/${REPO}/
+          cp /home/builder/build/${MESA32}/*.zst /home/builder/build/${REPO}/
+          su builder -c "cd /home/builder/build/${REPO} && repo-add ps4-video.db.tar.zst *.zst"
+
       - name: Commit artifacts back
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add ./built/
-          git commit -m "Update built Mesa $(date +'%Y-%m-%d')"
+          git add ${REPO}/*.zst ${REPO}/ps4-video.db.tar.zst
+          git commit -m "Update built Mesa and drivers $(date +'%Y-%m-%d')" || echo "No changes to commit"
           git push
