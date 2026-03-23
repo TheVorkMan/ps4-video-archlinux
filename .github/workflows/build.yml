@@ -9,12 +9,12 @@ jobs:
     container:
       image: archlinux:latest
     env:
-      MESA64: ps4-video-archlinux/mesa-ps4
-      MESA32: ps4-video-archlinux/lib32-mesa-ps4
-      LIBDRM64: ps4-video-archlinux/libdrm-ps4
-      LIBDRM32: ps4-video-archlinux/lib32-libdrm-ps4
-      XF86: ps4-video-archlinux/xf86-video-amdgpu-ps4
-      REPO: ps4-video-archlinux/repo
+      MESA64: mesa-ps4
+      MESA32: lib32-mesa-ps4
+      LIBDRM64: libdrm-ps4
+      LIBDRM32: lib32-libdrm-ps4
+      XF86: xf86-video-amdgpu-ps4
+      REPO: repo
 
     steps:
       - name: Checkout repository
