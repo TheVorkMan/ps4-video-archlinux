@@ -25,7 +25,11 @@ jobs:
         run: |
           pacman-key --init
           pacman-key --populate archlinux
-          pacman -Sy --noconfirm base-devel git fakeroot meson ninja llvm zlib libdrm python
+          pacman -Sy --noconfirm \
+              base-devel git fakeroot meson ninja llvm zlib libdrm python \
+              libxxf86vm libxdamage libxshmfence libunwind libglvnd \
+              wayland lm_sensors vulkan-icd-loader libxfixes libx11 libxext \
+              libxcb xcb-util-keysyms clang libclc spirv-llvm-translator spirv-tools
 
       - name: Create non-root build user and workspace
         run: |
