@@ -22,10 +22,10 @@ jobs:
 
       - name: Setup Arch chroot
         run: |
-          sudo pacman-key --init
-          sudo pacman-key --populate archlinux
-          sudo pacman -Sy --noconfirm base-devel git fakeroot
-          sudo pacman -S --needed --noconfirm \
+          pacman-key --init
+          pacman-key --populate archlinux
+          pacman -Sy --noconfirm base-devel git fakeroot
+          pacman -S --needed --noconfirm \
             meson ninja llvm zlib libdrm python
 
       - name: Build Mesa (64-bit)
