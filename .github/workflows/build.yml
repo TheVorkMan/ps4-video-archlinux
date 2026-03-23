@@ -23,9 +23,8 @@ jobs:
 
       - name: Enable multilib repo
         run: |
-          sed -i '/#\[multilib\]/s/^#//' /etc/pacman.conf
-          sed -i '/#Include = \/etc\/pacman.d\/mirrorlist/s/^#//' /etc/pacman.conf
-          pacman -Sy
+          echo "Server = https://mirror.rackspace.com/archlinux/\$repo/os/\$arch" > /etc/pacman.d/mirrorlist
+          pacman -Sy --noconfirm
         
       - name: Install build dependencies
         run: |
