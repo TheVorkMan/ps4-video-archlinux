@@ -29,7 +29,8 @@ jobs:
               base-devel git fakeroot meson ninja llvm zlib libdrm python \
               libxxf86vm libxdamage libxshmfence libunwind libglvnd \
               wayland lm_sensors vulkan-icd-loader libxfixes libx11 libxext \
-              libxcb xcb-util-keysyms clang libclc spirv-llvm-translator spirv-tools
+              libxcb xcb-util-keysyms clang libclc spirv-llvm-translator spirv-tools \
+              python-docutils cairo cunit
 
       - name: Create non-root build user and workspace
         run: |
