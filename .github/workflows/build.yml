@@ -40,23 +40,23 @@ jobs:
 
       - name: Build Mesa 64-bit
         run: |
-          su builder -c "cd /home/builder/build/${MESA64} && makepkg -s --skippgpcheck"
+          su builder -c "cd /home/builder/build/${MESA64} && makepkg --skippgpcheck"
 
       - name: Build Mesa 32-bit
         run: |
-          su builder -c "cd /home/builder/build/${MESA32} && makepkg -s --skippgpcheck"
+          su builder -c "cd /home/builder/build/${MESA32} && makepkg --skippgpcheck"
 
       - name: Build libdrm 64-bit
         run: |
-          su builder -c "cd /home/builder/build/${LIBDRM64} && makepkg -s --skippgpcheck"
+          su builder -c "cd /home/builder/build/${LIBDRM64} && makepkg --skippgpcheck"
 
       - name: Build libdrm 32-bit
         run: |
-          su builder -c "cd /home/builder/build/${LIBDRM32} && makepkg -s --skippgpcheck"
+          su builder -c "cd /home/builder/build/${LIBDRM32} && makepkg --skippgpcheck"
 
       - name: Build XF86 driver
         run: |
-          su builder -c "cd /home/builder/build/${XF86} && makepkg -s --skippgpcheck"
+          su builder -c "cd /home/builder/build/${XF86} && makepkg --skippgpcheck"
 
       - name: Copy built packages and update repo
         run: |
