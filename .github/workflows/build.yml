@@ -21,6 +21,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
+      - name: Enable multilib repo
+        run: |
+          sed -i '/#\[multilib\]/s/^#//' /etc/pacman.conf
+          sed -i '/#Include = \/etc\/pacman.d\/mirrorlist/s/^#//' /etc/pacman.conf
+          pacman -Sy
+        
       - name: Install build dependencies
         run: |
           pacman-key --init
