@@ -38,7 +38,7 @@ jobs:
               wayland lm_sensors vulkan-icd-loader libxfixes libx11 libxext \
               libxcb xcb-util-keysyms clang libclc spirv-llvm-translator spirv-tools \
               python-docutils cairo cunit \
-              lib32-glibc lib32-libpciaccess lib32-zlib lib32-libx11 lib32-libxext \
+              lib32-glibc lib32-zlib lib32-libx11 lib32-libxext \
               lib32-libxfixes lib32-libxcb xcb-util-keysyms
 
       - name: Create non-root build user and workspace
