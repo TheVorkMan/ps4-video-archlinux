@@ -1,88 +1,86 @@
-name: Build Mesa and related packages
+name: Build Mesa and related packages (chroot)
 
 on:
-  workflow_dispatch:  # manual trigger
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     container:
       image: archlinux:latest
+      options: --privileged   # REQUIRED for devtools
 
     env:
+      CHROOT: /var/lib/archbuild/extra-x86_64
+      REPO: repo
+
       MESA64: mesa-ps4
       MESA32: lib32-mesa-ps4
       LIBDRM64: libdrm-ps4
       LIBDRM32: lib32-libdrm-ps4
       XF86: xf86-video-amdgpu-ps4
-      REPO: repo
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-      - name: Enable multilib repo
-        run: |
-          sed -i '/#\[multilib\]/s/^#//' /etc/pacman.conf
-          sed -i '/#Include = \/etc\/pacman.d\/mirrorlist/s/^#//' /etc/pacman.conf
-          echo "Server = https://mirror.rackspace.com/archlinux/\$repo/os/\$arch" > /etc/pacman.d/mirrorlist
-          pacman -Sy --noconfirm
-        
-      - name: Install build dependencies
+      - name: Initialize system
         run: |
           pacman-key --init
           pacman-key --populate archlinux
-          pacman -Sy --noconfirm \
-              base-devel git fakeroot meson ninja llvm zlib libdrm python \
-              libxxf86vm libxdamage libxshmfence libunwind libglvnd \
-              wayland lm_sensors vulkan-icd-loader libxfixes libx11 libxext \
-              libxcb xcb-util-keysyms clang libclc spirv-llvm-translator spirv-tools \
-              python-docutils cairo cunit \
-              lib32-glibc lib32-zlib lib32-libx11 lib32-libxext \
-              lib32-libxfixes lib32-libxcb xcb-util-keysyms
 
-      - name: Create non-root build user and workspace
+          sed -i '/#\[multilib\]/,/Include/s/^#//' /etc/pacman.conf
+
+          echo "Server = https://mirror.rackspace.com/archlinux/\$repo/os/\$arch" > /etc/pacman.d/mirrorlist
+
+          pacman -Syu --noconfirm
+
+      - name: Install devtools
         run: |
-          useradd -m builder
-          mkdir -p /home/builder/build
-          cp -r . /home/builder/build/
-          chown -R builder:builder /home/builder/build
+          pacman -S --noconfirm --needed devtools git base-devel
 
-      - name: Build libdrm 64-bit
+      - name: Create clean chroot
         run: |
-          su builder -c "cd /home/builder/build/${LIBDRM64} && makepkg -i --skippgpcheck"
+          mkarchroot $CHROOT/root base-devel
 
-      - name: Build libdrm 32-bit
+          # Enable multilib inside chroot
+          sed -i '/#\[multilib\]/,/Include/s/^#//' $CHROOT/root/etc/pacman.conf
+
+          arch-nspawn $CHROOT/root pacman -Syu --noconfirm
+
+      # ---- BUILD FUNCTION ----
+      - name: Build packages in chroot
         run: |
-          su builder -c "cd /home/builder/build/${LIBDRM32} && makepkg -i --skippgpcheck"
+          build_pkg () {
+            pkgdir=$1
+            cp -r $pkgdir /tmp/buildpkg
+            cd /tmp/buildpkg
 
-      - name: Build XF86 driver
+            makechrootpkg -c -r $CHROOT -- --noconfirm --skippgpcheck
+
+            mv *.pkg.tar.zst $GITHUB_WORKSPACE/${REPO}/
+            cd /
+            rm -rf /tmp/buildpkg
+          }
+
+          mkdir -p ${REPO}
+
+          build_pkg ${LIBDRM64}
+          build_pkg ${LIBDRM32}
+          build_pkg ${XF86}
+          build_pkg ${MESA64}
+          build_pkg ${MESA32}
+
+      - name: Create repo database
         run: |
-          su builder -c "cd /home/builder/build/${XF86} && makepkg -i --skippgpcheck"
+          cd ${REPO}
+          repo-add ps4-video.db.tar.zst *.pkg.tar.zst
 
-      - name: Build Mesa 64-bit
-        run: |
-          su builder -c "cd /home/builder/build/${MESA64} && makepkg -i --skippgpcheck"
-
-      - name: Build Mesa 32-bit
-        run: |
-          su builder -c "cd /home/builder/build/${MESA32} && makepkg -i --skippgpcheck"
-
-
-      - name: Copy built packages and update repo
-        run: |
-          mkdir -p /home/builder/build/${REPO}
-          cp /home/builder/build/${LIBDRM64}/*.zst /home/builder/build/${REPO}/
-          cp /home/builder/build/${LIBDRM32}/*.zst /home/builder/build/${REPO}/
-          cp /home/builder/build/${XF86}/*.zst /home/builder/build/${REPO}/
-          cp /home/builder/build/${MESA64}/*.zst /home/builder/build/${REPO}/
-          cp /home/builder/build/${MESA32}/*.zst /home/builder/build/${REPO}/
-          su builder -c "cd /home/builder/build/${REPO} && repo-add ps4-video.db.tar.zst *.zst"
-
-      - name: Commit artifacts back
+      - name: Commit artifacts
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add ${REPO}/*.zst ${REPO}/ps4-video.db.tar.zst
-          git commit -m "Update built Mesa and drivers $(date +'%Y-%m-%d')" || echo "No changes to commit"
+
+          git add ${REPO}/*
+          git commit -m "Update Mesa + drivers $(date +'%Y-%m-%d')" || echo "No changes"
           git push
