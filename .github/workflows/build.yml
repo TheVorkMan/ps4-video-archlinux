@@ -12,7 +12,7 @@ jobs:
       options: --privileged   # REQUIRED for devtools
 
     env:
-      CHROOT: /var/lib/archbuild
+      CHROOT: /var/lib/archbuild/extra-x86_64
       REPO: repo
 
       MESA64: mesa-ps4
@@ -44,7 +44,7 @@ jobs:
           mkdir -p /var/lib/archbuild
           cd /var/lib/archbuild
       
-          mkarchroot extra-x86_64/root extra-x86_64 base-devel
+          mkarchroot extra-x86_64/root base-devel
       
           ls -la extra-x86_64/root/etc
       
