@@ -41,15 +41,18 @@ jobs:
 
       - name: Create clean chroot
         run: |
-          mkdir -p "$CHROOT/extra-x86_64"
+          mkdir -p "$CHROOT"
           
           mkarchroot "$CHROOT/extra-x86_64/root" base-devel
           
+          # Verify it exists before continuing
+          ls -la "$CHROOT/extra-x86_64/root/etc"
+          
+          # Enable multilib inside chroot
           sed -i '/#\[multilib\]/,/Include/s/^#//' \
             "$CHROOT/extra-x86_64/root/etc/pacman.conf"
           
-          arch-nspawn "$CHROOT/extra-x86_64/root" \
-            pacman -Syu --noconfirm
+          arch-nspawn "$CHROOT/extra-x86_64/root" pacman -Syu --noconfirm
 
       # ---- BUILD FUNCTION ----
       - name: Build packages in chroot
@@ -59,7 +62,7 @@ jobs:
             cp -r $pkgdir /tmp/buildpkg
             cd /tmp/buildpkg
 
-            makechrootpkg -c -r $CHROOT -- --noconfirm --skippgpcheck
+            makechrootpkg -c -r "$CHROOT" -- --noconfirm --skippgpcheck
 
             mv *.pkg.tar.zst $GITHUB_WORKSPACE/${REPO}/
             cd /
