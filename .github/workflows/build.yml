@@ -41,17 +41,14 @@ jobs:
 
       - name: Create clean chroot
         run: |
-          mkdir -p /var/lib/archbuild
-          cd /var/lib/archbuild
-      
-          mkarchroot extra-x86_64/root base-devel
-      
-          ls -la extra-x86_64/root/etc
-      
+          mkdir -p ${CHROOT}
+
+          mkarchroot ${CHROOT}/root base-devel
+
           sed -i '/#\[multilib\]/,/Include/s/^#//' \
-            extra-x86_64/root/etc/pacman.conf
-      
-          arch-nspawn extra-x86_64/root pacman -Syu --noconfirm
+           ${CHROOT}/root/etc/pacman.conf
+
+          arch-nspawn ${CHROOT}/root pacman -Syu --noconfirm
 
       # ---- BUILD FUNCTION ----
       - name: Build packages in chroot
