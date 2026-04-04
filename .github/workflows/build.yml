@@ -12,7 +12,7 @@ jobs:
       options: --privileged   # REQUIRED for devtools
 
     env:
-      CHROOT: /var/lib/archbuild
+      CHROOT: /var/lib/archbuild/extra-x86_64
       REPO: repo
 
       MESA64: mesa-ps4
@@ -42,7 +42,7 @@ jobs:
       - name: Debug chroot
         run: |
           echo "CHROOT=$CHROOT"
-          ls -la /var/lib/archbuild
+          
           ls -la /var/lib/archbuild/extra-x86_64
           ls -la /var/lib/archbuild/extra-x86_64/root/etc
 
