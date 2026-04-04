@@ -39,6 +39,13 @@ jobs:
         run: |
           pacman -S --noconfirm --needed devtools git base-devel
 
+      - name: Debug chroot
+        run: |
+          echo "CHROOT=$CHROOT"
+          ls -la /var/lib/archbuild
+          ls -la /var/lib/archbuild/extra-x86_64
+          ls -la /var/lib/archbuild/extra-x86_64/root/etc
+
       - name: Create clean chroot
         run: |
           mkdir -p ${CHROOT}
