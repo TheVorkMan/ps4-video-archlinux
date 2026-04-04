@@ -44,7 +44,7 @@ jobs:
           mkdir -p /var/lib/archbuild
           cd /var/lib/archbuild
       
-          mkarchroot extra-x86_64/root base-devel
+          mkarchroot extra-x86_64/root extra-x86_64 base-devel
       
           ls -la extra-x86_64/root/etc
       
