@@ -41,7 +41,7 @@ jobs:
 
       - name: Create clean chroot
         run: |
-          mkdir -p ${CHROOT}
+          mkdir -p ${CHROOT}/root
 
           mkarchroot ${CHROOT}/root base-devel
 
