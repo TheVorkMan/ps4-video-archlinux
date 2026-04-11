@@ -17,8 +17,8 @@ jobs:
         run: |
           set -eux
 
-          curl -LO https://geo.mirror.pkgbuild.com/iso/latest/archlinux-bootstrap-x86_64.tar.gz
-          tar -xzf archlinux-bootstrap-x86_64.tar.gz
+          curl -LO https://geo.mirror.pkgbuild.com/iso/latest/archlinux-bootstrap-x86_64.tar.zst
+          tar --zstd -xvf archlinux-bootstrap-x86_64.tar.zst
 
       - name: Setup Arch environment
         run: |
