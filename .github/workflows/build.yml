@@ -41,8 +41,8 @@ jobs:
 
       - name: Create clean chroot
         run: |
+          rm -rf ${CHROOT}
           mkdir -p ${CHROOT}
-          rm -rf ${CHROOT}/root
           chmod 755 ${CHROOT}
       
           # Run mkarchroot with verbose output to see what's failing
