@@ -27,9 +27,14 @@ jobs:
           sudo cp -r root.x86_64 /arch
           sudo sed -i 's/^#Server/Server/' /arch/etc/pacman.d/mirrorlist
 
-          sudo arch-chroot /arch pacman-key --init
-          sudo arch-chroot /arch pacman-key --populate archlinux
-          sudo arch-chroot /arch pacman -Syu --noconfirm
+          sudo mount --bind /dev /arch/dev
+          sudo mount --bind /proc /arch/proc
+          sudo mount --bind /sys /arch/sys
+          sudo mount --bind /run /arch/run
+
+          sudo chroot /arch /bin/bash -c "pacman-key --init"
+          sudo chroot /arch /bin/bash -c "pacman-key --populate archlinux"
+          sudo chroot /arch /bin/bash -c "pacman -Syu --noconfirm"
 
       - name: Install devtools
         run: |
