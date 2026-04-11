@@ -81,7 +81,12 @@ jobs:
           }
       
           # install missing multilib deps first
-          sed -i '/^\#\[multilib\]/,/^\#Include/s/^#//' /etc/pacman.conf || true
+          cat >> /etc/pacman.conf << 'EOF'
+
+          [multilib]
+          Include = /etc/pacman.d/mirrorlist
+          EOF
+          
           pacman -Sy --noconfirm lib32-gcc-libs lib32-libpciaccess
       
           build_and_install libdrm-ps4
