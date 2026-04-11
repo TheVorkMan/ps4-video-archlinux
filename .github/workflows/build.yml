@@ -46,14 +46,9 @@ jobs:
           
           # Use pacstrap instead of mkarchroot to avoid nspawn issues
           pacstrap -K ${CHROOT}/root base-devel || exit 1
-          echo "pacstrap ok"
-          ls -la ${CHROOT}/root/
-          mkdir -p ${CHROOT}/root/etc/
-          touch ${CHROOT}/root/etc/pacman.conf
-          echo "created pacman.conf manually"
-          
-          # Enable multilib for future builds
-          sed -i '/#\[multilib\]/,/Include/s/^#//' ${CHROOT}/root/etc/pacman.conf
+          echo "pacstrap complete"
+          cp /etc/pacman.conf ${CHROOT}/root/etc/pacman.conf
+          echo "copied pacman.conf from host"
           
           # Update packages in chroot
           if [ -f ${CHROOT}/root/etc/pacman.conf ]; then
