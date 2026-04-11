@@ -42,19 +42,18 @@ jobs:
       - name: Create clean chroot
         run: |
           rm -rf ${CHROOT}
-          mkdir -p ${CHROOT}
-      
-          mkarchroot -C /etc/pacman.conf -M /etc/makepkg.conf ${CHROOT}/root base-devel || exit 1
-          echo "mkarchroot ok"
+          mkdir -p ${CHROOT}/root
+          
+          # Use pacstrap instead of mkarchroot to avoid nspawn issues
+          pacstrap -C /etc/pacman.conf -M /etc/makepkg.conf ${CHROOT}/root base-devel || exit 1
+          echo "pacstrap ok"
           
           # Enable multilib for future builds
           sed -i '/#\[multilib\]/,/Include/s/^#//' ${CHROOT}/root/etc/pacman.conf
-
-          # Use arch-chroot instead of arch-nspawn
+          
+          # Update packages in chroot
           if [ -f ${CHROOT}/root/etc/pacman.conf ]; then
-            sed -i '/#\[multilib\]/,/Include/s/^#//' ${CHROOT}/root/etc/pacman.conf
             arch-chroot ${CHROOT}/root pacman -Syu --noconfirm
-            pacman -r ${CHROOT}/root -Sy --noconfirm
           else
             echo "ERROR: Chroot creation failed - pacman.conf not found"
             exit 1
