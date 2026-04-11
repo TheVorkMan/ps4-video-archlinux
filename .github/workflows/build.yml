@@ -44,10 +44,11 @@ jobs:
           mkdir -p ${CHROOT}
           rm -rf ${CHROOT}/root
       
-          mkarchroot ${CHROOT}/root base-devel
-      
-          arch-nspawn ${CHROOT}/root pacman -Syu --noconfirm
+          # Enable multilib BEFORE updating
           sed -i '/#\[multilib\]/,/Include/s/^#//' ${CHROOT}/root/etc/pacman.conf
+      
+          # Now update the chroot
+          arch-nspawn ${CHROOT}/root pacman -Syu --noconfirm
           pacman -r ${CHROOT}/root -Sy --noconfirm
 
 
