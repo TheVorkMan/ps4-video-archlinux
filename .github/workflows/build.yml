@@ -50,7 +50,15 @@ jobs:
           # Enable multilib for future builds
           sed -i '/#\[multilib\]/,/Include/s/^#//' ${CHROOT}/root/etc/pacman.conf
 
-
+          # Use arch-chroot instead of arch-nspawn
+          if [ -f ${CHROOT}/root/etc/pacman.conf ]; then
+            sed -i '/#\[multilib\]/,/Include/s/^#//' ${CHROOT}/root/etc/pacman.conf
+            arch-chroot ${CHROOT}/root pacman -Syu --noconfirm
+            pacman -r ${CHROOT}/root -Sy --noconfirm
+          else
+            echo "ERROR: Chroot creation failed - pacman.conf not found"
+            exit 1
+          fi
 
       # ---- BUILD FUNCTION ----
       - name: Build packages in chroot
