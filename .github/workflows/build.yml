@@ -37,19 +37,17 @@ jobs:
 
       - name: Install devtools
         run: |
-          pacman -S --noconfirm --needed devtools git base-devel
+          pacman -S --noconfirm --needed devtools git base-devel arch-install-scripts
 
       - name: Create clean chroot
         run: |
           mkdir -p ${CHROOT}
           rm -rf ${CHROOT}/root
+          chmod 755 ${CHROOT}
       
           # Run mkarchroot with verbose output to see what's failing
-          mkarchroot -C /etc/pacman.conf -M /etc/makepkg.conf ${CHROOT}/root base-devel || {
-            echo "mkarchroot failed, checking logs..."
-            ls -la ${CHROOT}/root/etc/ || echo "Root directory is empty"
-            exit 1
-          }
+          mkarchroot -C /etc/pacman.conf -M /etc/makepkg.conf ${CHROOT}/root base-devel || exit 1
+          echo "mkarchroot ok"
       
           # Only proceed if the chroot was created successfully
           if [ -f ${CHROOT}/root/etc/pacman.conf ]; then
