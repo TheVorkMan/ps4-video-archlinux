@@ -63,23 +63,25 @@ jobs:
         run: |
           build_pkg () {
             pkgdir=$1
-            cp -r $pkgdir /tmp/buildpkg
+            cp -r "$pkgdir" /tmp/buildpkg
             cd /tmp/buildpkg
-
-            makechrootpkg -c -r "$CHROOT" -- --noconfirm --skippgpcheck
-
-            mv *.pkg.tar.zst $GITHUB_WORKSPACE/${REPO}/
+      
+            export CHROOT_COPY=/tmp/chroot-copy
+            extra-x86_64-build -- --noconfirm --skippgpcheck
+      
+            mv ./*.pkg.tar.zst "$GITHUB_WORKSPACE/${REPO}/"
+      
             cd /
             rm -rf /tmp/buildpkg
           }
-
-          mkdir -p ${REPO}
-
-          build_pkg ${LIBDRM64}
-          build_pkg ${LIBDRM32}
-          build_pkg ${XF86}
-          build_pkg ${MESA64}
-          build_pkg ${MESA32}
+      
+          mkdir -p "${REPO}"
+      
+          build_pkg "${LIBDRM64}"
+          build_pkg "${LIBDRM32}"
+          build_pkg "${XF86}"
+          build_pkg "${MESA64}"
+          build_pkg "${MESA32}"
 
       - name: Create repo database
         run: |
