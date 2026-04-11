@@ -44,12 +44,22 @@ jobs:
           mkdir -p ${CHROOT}
           rm -rf ${CHROOT}/root
       
-          # Enable multilib BEFORE updating
-          sed -i '/#\[multilib\]/,/Include/s/^#//' ${CHROOT}/root/etc/pacman.conf
+          # Run mkarchroot with verbose output to see what's failing
+          mkarchroot -C /etc/pacman.conf -M /etc/makepkg.conf ${CHROOT}/root base-devel || {
+            echo "mkarchroot failed, checking logs..."
+            ls -la ${CHROOT}/root/etc/ || echo "Root directory is empty"
+            exit 1
+          }
       
-          # Now update the chroot
-          arch-nspawn ${CHROOT}/root pacman -Syu --noconfirm
-          pacman -r ${CHROOT}/root -Sy --noconfirm
+          # Only proceed if the chroot was created successfully
+          if [ -f ${CHROOT}/root/etc/pacman.conf ]; then
+            sed -i '/#\[multilib\]/,/Include/s/^#//' ${CHROOT}/root/etc/pacman.conf
+            arch-nspawn ${CHROOT}/root pacman -Syu --noconfirm
+            pacman -r ${CHROOT}/root -Sy --noconfirm
+          else
+            echo "ERROR: Chroot creation failed - pacman.conf not found"
+            exit 1
+          f
 
 
 
