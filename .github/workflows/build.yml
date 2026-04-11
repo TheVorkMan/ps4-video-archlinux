@@ -46,6 +46,7 @@ jobs:
           chmod 755 ${CHROOT}
       
           # Run mkarchroot with verbose output to see what's failing
+          mkdir -p ${CHROOT}/root/etc/
           touch ${CHROOT}/root/etc/pacman.conf
           mkarchroot -C /etc/pacman.conf -M /etc/makepkg.conf ${CHROOT}/root base-devel || exit 1
           echo "mkarchroot ok"
