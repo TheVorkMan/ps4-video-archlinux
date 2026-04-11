@@ -58,30 +58,36 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-
+      
           mkdir -p "$GITHUB_WORKSPACE/$REPO_DIR"
-
-          build_pkg() {
+      
+          build_and_install() {
             local pkg="$1"
-
+      
             echo "=== BUILDING $pkg ==="
-
+      
             cd "$GITHUB_WORKSPACE/$pkg"
-
+      
             sudo -u builder bash -c "
               cd '$GITHUB_WORKSPACE/$pkg' &&
               makepkg -sfc --noconfirm --skippgpcheck
             "
-
-            find . -maxdepth 1 -name "*.pkg.tar.zst" \
-              -exec mv {} "$GITHUB_WORKSPACE/$REPO_DIR/" \;
+      
+            PKG_FILE=$(find . -maxdepth 1 -name "*.pkg.tar.zst" | head -n1)
+      
+            cp "$PKG_FILE" "$GITHUB_WORKSPACE/$REPO_DIR/"
+      
+            pacman -U --noconfirm "$PKG_FILE"
           }
-
-          build_pkg libdrm-ps4
-          build_pkg lib32-libdrm-ps4
-          build_pkg xf86-video-amdgpu-ps4
-          build_pkg mesa-ps4
-          build_pkg lib32-mesa-ps4
+      
+          # install missing multilib deps first
+          pacman -S --noconfirm multilib-devel gcc-multilib lib32-gcc-libs lib32-libpciaccess
+      
+          build_and_install libdrm-ps4
+          build_and_install lib32-libdrm-ps4
+          build_and_install xf86-video-amdgpu-ps4
+          build_and_install mesa-ps4
+          build_and_install lib32-mesa-ps4
 
       - name: Create repo
         shell: bash
