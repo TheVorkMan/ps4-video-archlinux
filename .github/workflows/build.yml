@@ -41,12 +41,11 @@ jobs:
 
       - name: Create clean chroot
         run: |
-          if [ ! -d ${CHROOT}/root/bin ]; then
-            mkarchroot ${CHROOT}/root base-devel
-          else
-            echo "Chroot already exists, skipping mkarchroot"
-          fi
-
+          mkdir -p ${CHROOT}
+          rm -rf ${CHROOT}/root
+      
+          mkarchroot ${CHROOT}/root base-devel
+      
           arch-nspawn ${CHROOT}/root pacman -Syu --noconfirm
           sed -i '/#\[multilib\]/,/Include/s/^#//' ${CHROOT}/root/etc/pacman.conf
           pacman -r ${CHROOT}/root -Sy --noconfirm
