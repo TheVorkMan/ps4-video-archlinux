@@ -1,9 +1,7 @@
-name: Build PS4 Mesa stack (container)
+name: Build PS4 Mesa stack
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
 
 permissions:
   contents: write
@@ -14,16 +12,14 @@ jobs:
 
     container:
       image: archlinux:latest
-      options: --privileged
 
     env:
       REPO_DIR: repo
 
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-      - name: Initialize Arch environment
+      - name: Initialize Arch
         shell: bash
         run: |
           set -euxo pipefail
@@ -33,33 +29,29 @@ jobs:
 
           sed -i '/#\[multilib\]/,/Include/s/^#//' /etc/pacman.conf
 
-          cat > /etc/pacman.d/mirrorlist << 'EOF'
-          Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch
-          EOF
+          echo 'Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch' \
+            > /etc/pacman.d/mirrorlist
 
           pacman -Syu --noconfirm
 
-      - name: Install build dependencies
+      - name: Install build tools
         shell: bash
         run: |
           set -euxo pipefail
 
           pacman -S --noconfirm --needed \
-            devtools \
             base-devel \
             git \
             sudo \
-            fakeroot \
-            arch-install-scripts
+            fakeroot
 
-      - name: Create non-root build user
+      - name: Create builder user
         shell: bash
         run: |
           set -euxo pipefail
 
           useradd -m builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-
           chown -R builder:builder "$GITHUB_WORKSPACE"
 
       - name: Build packages
@@ -74,15 +66,15 @@ jobs:
 
             echo "=== BUILDING $pkg ==="
 
-            rm -rf /tmp/buildpkg
-            cp -r "$GITHUB_WORKSPACE/$pkg" /tmp/buildpkg
-            chown -R builder:builder /tmp/buildpkg
+            cd "$GITHUB_WORKSPACE/$pkg"
 
-            cd /tmp/buildpkg
+            sudo -u builder bash -c "
+              cd '$GITHUB_WORKSPACE/$pkg' &&
+              makepkg -sfc --noconfirm --skippgpcheck
+            "
 
-            sudo -u builder extra-x86_64-build -- --noconfirm --skippgpcheck
-
-            find . -name "*.pkg.tar.zst" -exec mv {} "$GITHUB_WORKSPACE/$REPO_DIR/" \;
+            find . -maxdepth 1 -name "*.pkg.tar.zst" \
+              -exec mv {} "$GITHUB_WORKSPACE/$REPO_DIR/" \;
           }
 
           build_pkg libdrm-ps4
@@ -91,7 +83,7 @@ jobs:
           build_pkg mesa-ps4
           build_pkg lib32-mesa-ps4
 
-      - name: Create local package repository
+      - name: Create repo
         shell: bash
         run: |
           set -euxo pipefail
@@ -99,24 +91,7 @@ jobs:
           cd "$GITHUB_WORKSPACE/$REPO_DIR"
           repo-add ps4-video.db.tar.zst *.pkg.tar.zst
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: ps4-video-packages
           path: repo/
-
-      - name: Commit packages
-        shell: bash
-        run: |
-          set -euxo pipefail
-
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-
-          git add repo/*
-          git commit -m "Update packages $(date +'%Y-%m-%d %H:%M')" || true
-          git push
-
-          git add repo/*
-          git commit -m "Update packages $(date +'%Y-%m-%d %H:%M')" || true
-          git push
