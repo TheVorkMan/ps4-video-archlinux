@@ -1,4 +1,4 @@
-name: Build Mesa and related packages (chroot) shit
+name: Build Mesa and related packages (chroot)
 
 on:
   workflow_dispatch:
