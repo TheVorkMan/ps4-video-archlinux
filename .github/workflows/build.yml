@@ -86,7 +86,8 @@ jobs:
           [multilib]
           Include = /etc/pacman.d/mirrorlist
           EOF
-          
+
+          pacman -Rdd --noconfirm mesa lib32-mesa
           pacman -Sy --noconfirm lib32-gcc-libs lib32-libpciaccess
       
           build_and_install libdrm-ps4
