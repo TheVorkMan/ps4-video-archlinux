@@ -115,6 +115,11 @@ jobs:
           set -euxo pipefail
 
           cd "$GITHUB_WORKSPACE"/"$REPO_DIR"/
+
+          pwd
+          ls -la
+          ls -la "$GITHUB_WORKSPACE"
+          ls -la "$GITHUB_WORKSPACE/.git" || true
       
           git config user.name "github-actions"
           git config user.email "actions@github.com"
