@@ -107,6 +107,8 @@ jobs:
           repo-add ps4-video.db.tar.zst *.pkg.tar.zst
 
       - name: Commit artifacts
+        shell: bash
+        working-directory: ${{ github.workspace }}
         run: |
           set -euxo pipefail
 
