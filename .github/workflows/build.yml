@@ -110,16 +110,15 @@ jobs:
           repo-add ps4-video.db.tar.zst *.pkg.tar.zst
 
       - name: Commit artifacts
-        shell: bash
         working-directory: ${{ github.workspace }}
         run: |
           set -euxo pipefail
 
-          cd "$GITHUB_WORKSPACE"
+          cd "$GITHUB_WORKSPACE"/"$REPO_DIR"/
       
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-      
-          git add "$REPO_DIR"/
+          
+          git add *
           git commit -m "Update Mesa + drivers $(date +'%Y-%m-%d %H:%M')" || echo "No changes"
           git push
