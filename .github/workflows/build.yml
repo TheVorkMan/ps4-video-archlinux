@@ -76,6 +76,9 @@ jobs:
             PKG_FILE=$(find . -maxdepth 1 -name "*.pkg.tar.zst" | head -n1)
       
             cp "$PKG_FILE" "$GITHUB_WORKSPACE/$REPO_DIR/"
+
+            pacman -Rdd --noconfirm mesa || true
+            pacman -Rdd --noconfirm lib32-mesa || true
       
             pacman -U --noconfirm "$PKG_FILE"
           }
@@ -86,8 +89,7 @@ jobs:
           [multilib]
           Include = /etc/pacman.d/mirrorlist
           EOF
-
-          pacman -Rdd --noconfirm mesa lib32-mesa
+          
           pacman -Sy --noconfirm lib32-gcc-libs lib32-libpciaccess
       
           build_and_install libdrm-ps4
